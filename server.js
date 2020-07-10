@@ -8,6 +8,10 @@ dotenv.config({ path: './config/config.env' });
 // load express
 const app = express();
 
+// middlewares
+if (process.env.NODE_ENV === "develoment") {
+    app.use(morgan('dev'));
+}
 // load routers 
 app.use('/api/v1/bootcamp', bootcamp);
 
