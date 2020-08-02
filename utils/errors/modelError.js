@@ -8,7 +8,7 @@ class modelError extends Error {
         const errorStorage = createErrorStorage();
         const errorRegister = errorStorage.get(status);
         
-        this.name = error.name || "modelError";
+        this.name = "modelError";
         this.status = status;
         this.code = errorRegister.code;
         this.message = errorRegister.message;

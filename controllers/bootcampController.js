@@ -21,7 +21,7 @@ exports.getBootcamps = async(req, res, next) => {
         queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
 
         // set database find function with params to query
-        query = bootcampModel.find(JSON.parse(queryStr));
+        query = bootcampModel.find(JSON.parse(queryStr)).populate('courses');
 
         // check for advance field select
         if (req.query.select) {
@@ -149,11 +149,13 @@ exports.updateBootcamp = async(req, res, next) => {
 // @access  Public
 exports.deleteBootcamp = async(req, res, next) => {
     try{
-        const bootcamp = await bootcampModel.findByIdAndDelete(req.body.id);
+        const bootcamp = await bootcampModel.findById(req.body.id);
 
         if (!bootcamp) {
             return next(new modelError("RESOURCE_NOT_FOUND", { name: "NotFoundError" }));
         }
+
+        bootcamp.remove();
 
         res.status(200);
         res.json({ 
