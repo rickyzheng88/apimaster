@@ -58,8 +58,8 @@ exports.getSingleCourse = async (req, res, next) => {
 };
 
 // @desc      Add a Course
-// @Route     GET /api/v1/bootcamp/:bootcampId/courses
-// @access    Public
+// @Route     POST /api/v1/bootcamp/:bootcampId/courses
+// @access    Private
 exports.addCourse = async (req, res, next) => {
     try {
         req.body.bootcamp = req.params.bootcampId;
@@ -72,12 +72,61 @@ exports.addCourse = async (req, res, next) => {
 
         const course = await courseModel.create(req.body);
 
+        res.status(201).json({
+            sucess: true,
+            data: course
+        });
+    } catch (err) {
+        console.log(err, colors.red);
+        next(new modelError("RESOURCE_NOT_CREATED", err));
+    }
+};
+
+// @desc      Update a Course
+// @Route     PUT /api/v1/courses/:id
+// @access    Private
+exports.updateCourse = async (req, res, next) => {
+    try {
+        let course = await courseModel.findById(req.params.id);
+
+        if (!course) {
+            next(new modelError("RESOURCE_NOT_FOUND"));
+        }
+
+        course = await courseModel.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
         res.status(200).json({
             sucess: true,
             data: course
         });
     } catch (err) {
         console.log(err, colors.red);
-        next(new modelError("RESOURCE_NOT_RETRIEVED", err));
+        next(new modelError("RESOURCE_NOT_UPDATED", err));
+    }
+};
+
+// @desc      delete a Course
+// @Route     DELETE /api/v1/courses/:id
+// @access    Private
+exports.deleteCourse = async (req, res, next) => {
+    try {
+        let course = await courseModel.findById(req.params.id);
+
+        if (!course) {
+            next(new modelError("RESOURCE_NOT_FOUND"));
+        }
+
+        await course.remove();
+
+        res.status(200).json({
+            sucess: true,
+            data: `course: course deleted`
+        });
+    } catch (err) {
+        console.log(err, colors.red);
+        next(new modelError("RESOURCE_NOT_DELETED", err));
     }
 };
