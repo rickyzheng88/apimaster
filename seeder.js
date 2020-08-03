@@ -24,6 +24,7 @@ const courses = JSON.parse(fs.readFileSync(`${__dirname}/_data/courses.json`, 'u
 
 // Import into Database
 const importData = async () => {
+    console.log("Importing Data, please wait a minute".blue);
     try {
         await bootcamp.create(bootcamps);
         await course.create(courses);
@@ -36,6 +37,7 @@ const importData = async () => {
 };
 
 const deleteData = async () => {
+    console.log("Deleting Data, please wait a minute".blue);
     try {
         await bootcamp.deleteMany();
         await course.deleteMany();
