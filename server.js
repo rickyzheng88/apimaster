@@ -1,10 +1,12 @@
 const express = require('express');
+const path = require('path');
 const dotenv = require('dotenv');
 const bootcamp = require('./routes/bootcamp');
 const course = require('./routes/course');
 const morgan = require('morgan');
 const conectdb = require('./config/db');
 const errorHandler = require('./middleware/error');
+const fileupload = require('express-fileupload')
 
 // load env vars
 dotenv.config({ path: './config/config.env' });
@@ -20,6 +22,11 @@ if (process.env.NODE_ENV === "develoment") {
     app.use(morgan('dev'));
 }
 app.use(express.json());
+// using express fileupload middleware
+app.use(fileupload());
+
+// set Static folder
+app.use(express.static(path.join(__dirname, 'public')));
 
 // load routers 
 app.use('/api/v1/bootcamp', bootcamp);

@@ -2,6 +2,7 @@ const bootcampModel = require('../models/bootcampModel');
 const modelError = require('../utils/errors/modelError');
 const geocoder = require('../utils/geocoder');
 const colors = require('colors');
+const path = require('path');
 
 // @desc    Get all bootcamps
 // @route   GET /api/v1/bootcamp
@@ -165,7 +166,7 @@ exports.deleteBootcamp = async(req, res, next) => {
     } catch (err) {
         next(new modelError("RESOURCE_NOT_DELETED", err));
     }
-}
+};
 
 // @desc    Get a Bootcamp within a Radius
 // @route   UPDATE /api/v1/bootcamp/radius/:zipcode/:distance
@@ -203,4 +204,47 @@ exports.getBootcampsInRadius = async(req, res, next) => {
         console.log(err);
         next(new modelError("RESOURCE_NOT_RETRIEVED", err));
     }
-}
+};
+
+// @desc    Upload photo for bootcamp
+// @route   DELETE /api/v1/bootcamp/:id/photo
+// @access  Public
+exports.bootcampPhotoUpload = async(req, res, next) => {
+    try{
+        const bootcamp = await bootcampModel.findById(req.params.id);
+
+        if (!bootcamp) {
+            return next(new modelError("RESOURCE_NOT_FOUND"));
+        }
+
+        if ( !(req.files && req.files.file.mimetype.startsWith('image')) ) {
+            return next(new modelError("RESOURCE_NOT_UPLOADED"));
+        }
+
+        const file = req.files.file;
+
+        // create custom filename
+        if (file.size > process.env.MAX_FILE_UPLOAD) {
+            return next(new modelError("UPLOAD_FILE_EXCEED"));
+        }
+
+        file.name = `photo_${bootcamp._id}${path.parse(file.name).ext}`;
+
+        file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
+            if (err) {
+                console.error(err);
+                return next(new modelError("RESOURCE_NOT_UPLOADED"));
+            }
+
+            await bootcampModel.findByIdAndUpdate(req.params.id, { photo: file.name });
+
+            res.status(200)
+            .json({
+                success: true,
+                data: file.name
+            });
+        });        
+    } catch (err) {
+        next(new modelError("RESOURCE_NOT_UPLOADED"));
+    }
+};

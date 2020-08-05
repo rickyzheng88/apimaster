@@ -39,6 +39,14 @@ const createErrorStorage = () => {
             code: 400,
             message: "Could not delete resource, something went wrong with params format or database connection"
         });
+        errorStorage.set("RESOURCE_NOT_UPLOADED", {
+            code: 400,
+            message: "Could not upload resource, something went wrong with database connection or upload resources not found"
+        });
+        errorStorage.set("UPLOAD_FILE_EXCEED", {
+            code: 400,
+            message: "Could not upload file, exceed the max size"
+        });
 
     return errorStorage;
 }
