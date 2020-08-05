@@ -9,71 +9,8 @@ const path = require('path');
 // @access  Public
 exports.getBootcamps = async(req, res, next) => {
     try{
-        let query;
-
-        let reqQuery = { ...req.query };
-        const removeFields = ['select', 'sort', 'page', 'limit'];
-
-        // Removing Select field
-        removeFields.forEach(field => delete reqQuery[field]);
-
-        // parsing advance filter
-        let queryStr = JSON.stringify(reqQuery);
-        queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
-
-        // set database find function with params to query
-        query = bootcampModel.find(JSON.parse(queryStr)).populate('courses');
-
-        // check for advance field select
-        if (req.query.select) {
-            const fields = req.query.select.split(",").join(" ");
-            query = query.select(fields);
-        }
-
-        if (req.query.sort) {
-            const sortBy = req.query.sort.split(",").join(" ");
-            console.log(sortBy);
-            query = query.sort(sortBy);
-        }
-
-        // Pagination
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 25;
-        const startIndex = (page - 1) * limit;
-        const endIndex = page * limit;
-        const total = await bootcampModel.countDocuments();
-        
-        query = query.skip(startIndex).limit(limit);
-
-        // searching for bootcamps
-        const bootcamps = await query;
-
-        if (!bootcamps) {
-            next(new modelError("RESOURCE_NOT_FOUND", { name: "NotFoundError" }));
-        }
-
-        // Setting pagination info to response
-        const pagination = {};
-
-        if (endIndex < total) {
-            pagination.next = {
-                page: page + 1,
-                limit
-            }
-        } else if (startIndex > 0) {
-            pagination.prev = {
-                page: page - 1,
-                limit
-            }
-        }
-
         res.status(200);
-        res.json({ 
-            success: true,
-            count: bootcamps.length,
-            pagination,
-            data: bootcamps
-        });
+        res.json(res.advancedResults);
     } catch (err) {
         console.log(err, colors.red);
         next(new modelError("RESOURCE_NOT_RETRIEVED", err));
