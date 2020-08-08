@@ -3,6 +3,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const bootcamp = require('./routes/bootcamp');
 const course = require('./routes/course');
+const auth = require('./routes/auth');
 const morgan = require('morgan');
 const conectdb = require('./config/db');
 const errorHandler = require('./middleware/error');
@@ -31,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // load routers 
 app.use('/api/v1/bootcamp', bootcamp);
 app.use('/api/v1/courses', course);
+app.use('/api/v1/auth', auth);
 
 // load error handler
 app.use(errorHandler);
