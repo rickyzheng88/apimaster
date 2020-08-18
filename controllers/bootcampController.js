@@ -3,6 +3,7 @@ const modelError = require('../utils/errors/modelError');
 const geocoder = require('../utils/geocoder');
 const colors = require('colors');
 const path = require('path');
+const customError = require('../utils/errors/customError');
 
 // @desc    Get all bootcamps
 // @route   GET /api/v1/bootcamp
@@ -42,7 +43,7 @@ exports.getBootcamp = async(req, res, next) => {
 
 // @desc    Create a new bootcamp
 // @route   POST /api/v1/bootcamp
-// @access  Public
+// @access  Protected
 exports.createBootcamp = async(req, res, next) => {
     try{
         let result = await bootcampModel.create(req.body);
@@ -61,7 +62,7 @@ exports.createBootcamp = async(req, res, next) => {
 
 // @desc    Update a bootcamp
 // @route   UPDATE /api/v1/bootcamp/:id
-// @access  Public
+// @access  Protected
 exports.updateBootcamp = async(req, res, next) => {
     try{
         let bootcamp = await bootcampModel.findByIdAndUpdate(req.body.id, req.body.update, {
@@ -84,7 +85,7 @@ exports.updateBootcamp = async(req, res, next) => {
 
 // @desc    delete a bootcamp
 // @route   DELETE /api/v1/bootcamp
-// @access  Public
+// @access  Protected
 exports.deleteBootcamp = async(req, res, next) => {
     try{
         const bootcamp = await bootcampModel.findById(req.body.id);
@@ -107,7 +108,7 @@ exports.deleteBootcamp = async(req, res, next) => {
 
 // @desc    Get a Bootcamp within a Radius
 // @route   UPDATE /api/v1/bootcamp/radius/:zipcode/:distance
-// @access  Private
+// @access  Protected
 exports.getBootcampsInRadius = async(req, res, next) => {
     try{
         // get lat/lon from geocoder
@@ -145,17 +146,19 @@ exports.getBootcampsInRadius = async(req, res, next) => {
 
 // @desc    Upload photo for bootcamp
 // @route   DELETE /api/v1/bootcamp/:id/photo
-// @access  Public
+// @access  Protected
 exports.bootcampPhotoUpload = async(req, res, next) => {
     try{
         const bootcamp = await bootcampModel.findById(req.params.id);
-
+        
+        // Check if given Bootcamp Id does exist
         if (!bootcamp) {
             return next(new modelError("RESOURCE_NOT_FOUND"));
         }
-
+        
+        // Check if user has uploaded a file and if the file uploaded is an image type file
         if ( !(req.files && req.files.file.mimetype.startsWith('image')) ) {
-            return next(new modelError("RESOURCE_NOT_UPLOADED"));
+            return next(new custom('RESOURCE_NOT_UPLOADED', 400, "Media file Doesn't Existe or is not a image type file", err));
         }
 
         const file = req.files.file;
@@ -165,12 +168,14 @@ exports.bootcampPhotoUpload = async(req, res, next) => {
             return next(new modelError("UPLOAD_FILE_EXCEED"));
         }
 
+        // Creating the name of the file 'BootcampId.ImageExtension'
         file.name = `photo_${bootcamp._id}${path.parse(file.name).ext}`;
 
+        // Store Files to the given Path
         file.mv(`${process.env.FILE_UPLOAD_PATH}/${file.name}`, async err => {
             if (err) {
                 console.error(err);
-                return next(new modelError("RESOURCE_NOT_UPLOADED"));
+                return next(new customError('INTERNAL_ERROR', 500, 'Something wend wrong storing the file'));
             }
 
             await bootcampModel.findByIdAndUpdate(req.params.id, { photo: file.name });

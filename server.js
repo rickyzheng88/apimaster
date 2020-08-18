@@ -48,7 +48,7 @@ process.on('unhandledRejection', (err, promise) => {
     console.log(`Error: ${err.message}`);
 
     // server.close() stop listening for http connection on the server (But keep all existing connections)
-    // then process.exit() kill all the task such as running functions of the server inmediatly (stop all
+    // then process.exit() kill inmediatly all the task such as running functions of the server (stop all
     // existing connections)
     server.close(() => process.exit(1));
 });
