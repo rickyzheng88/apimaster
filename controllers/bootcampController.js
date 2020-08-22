@@ -46,7 +46,17 @@ exports.getBootcamp = async(req, res, next) => {
 // @access  Protected
 exports.createBootcamp = async(req, res, next) => {
     try{
-        let result = await bootcampModel.create(req.body);
+        // Add user id to req.body
+        req.body.user = req.user.id;
+
+        // Check for Published Bootcamp
+        const publishedBootcamp = await bootcampModel.findOne({ user: req.user.id });
+
+        if (publishedBootcamp && req.user.role !== 'admin') {
+            return next(new customError('REQUEST_NOT_ALLOWED', 403, 'Publisher Users cannot upload more than 1 bootcamp'));
+        }
+
+        const result = await bootcampModel.create(req.body);
 
         res.status(201);
         res.json({ 
@@ -54,7 +64,6 @@ exports.createBootcamp = async(req, res, next) => {
             data: result
         });
     } catch (err) {
-        console.log(err);
         next(new modelError("RESOURCE_NOT_CREATED", err));
     }
     
@@ -65,14 +74,21 @@ exports.createBootcamp = async(req, res, next) => {
 // @access  Protected
 exports.updateBootcamp = async(req, res, next) => {
     try{
-        let bootcamp = await bootcampModel.findByIdAndUpdate(req.body.id, req.body.update, {
-            new: true,
-            runValidators: true
-        });
+        let bootcamp = await bootcampModel.findById(req.body.id);
 
         if (!bootcamp) {
             return next(new modelError("RESOURCE_NOT_FOUND", { name: "NotFoundError" }));
         }
+
+        // make sure user is the owner of the bootcamps or an admin
+        if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(new customError('FORBIDDEN', 403, 'User has not permisson to update the bootcamp'));
+        }
+
+        bootcamp = await bootcampModel.findByIdAndUpdate(req.body.id, req.body.update, {
+            new: true,
+            runValidators: true
+        });
 
         res.status(200);
         res.json({
@@ -92,6 +108,11 @@ exports.deleteBootcamp = async(req, res, next) => {
 
         if (!bootcamp) {
             return next(new modelError("RESOURCE_NOT_FOUND", { name: "NotFoundError" }));
+        }
+
+        // make sure user is the owner of the bootcamps or an admin
+        if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(new customError('FORBIDDEN', 403, 'User has not permisson to update the bootcamp'));
         }
 
         bootcamp.remove();
@@ -154,6 +175,11 @@ exports.bootcampPhotoUpload = async(req, res, next) => {
         // Check if given Bootcamp Id does exist
         if (!bootcamp) {
             return next(new modelError("RESOURCE_NOT_FOUND"));
+        }
+        
+        // make sure user is the owner of the bootcamps or an admin
+        if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(new customError('FORBIDDEN', 403, 'User has not permisson to update the bootcamp'));
         }
         
         // Check if user has uploaded a file and if the file uploaded is an image type file

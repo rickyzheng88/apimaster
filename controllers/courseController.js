@@ -2,6 +2,7 @@ const courseModel = require('../models/courseModel');
 const bootcampModel = require('../models/bootcampModel');
 const modelError = require('../utils/errors/modelError');
 const colors = require('colors');
+const customError = require('../utils/errors/customError');
 
 // @desc      Get Courses
 // @Route     GET /api/v1/courses
@@ -56,11 +57,16 @@ exports.getSingleCourse = async (req, res, next) => {
 exports.addCourse = async (req, res, next) => {
     try {
         req.body.bootcamp = req.params.bootcampId;
+        req.body.user = req.user.id;
 
         const bootcamp = await bootcampModel.findById(req.params.bootcampId);
 
         if (!bootcamp) {
-            next(new modelError("RESOURCE_NOT_FOUND"));
+            return next(new modelError("RESOURCE_NOT_FOUND"));
+        }
+        
+        if (bootcamp.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(new customError("FORBIDDEN", 403, "User does not has permisson to add courses to this bootcamp"));
         }
 
         const course = await courseModel.create(req.body);
@@ -83,7 +89,12 @@ exports.updateCourse = async (req, res, next) => {
         let course = await courseModel.findById(req.params.id);
 
         if (!course) {
-            next(new modelError("RESOURCE_NOT_FOUND"));
+            return next(new modelError("RESOURCE_NOT_FOUND"));
+        }
+        
+        // make sure user is the owner of the course or an admin
+        if (course.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(new customError('FORBIDDEN', 403, 'User has not permisson to update the bootcamp'));
         }
 
         course = await courseModel.findByIdAndUpdate(req.params.id, req.body, {
@@ -109,7 +120,12 @@ exports.deleteCourse = async (req, res, next) => {
         let course = await courseModel.findById(req.params.id);
 
         if (!course) {
-            next(new modelError("RESOURCE_NOT_FOUND"));
+            return next(new modelError("RESOURCE_NOT_FOUND"));
+        }
+
+        // make sure user is the owner of the course or an admin
+        if (course.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return next(new customError('FORBIDDEN', 403, 'User has not permisson to update the bootcamp'));
         }
 
         await course.remove();
