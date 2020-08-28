@@ -54,7 +54,9 @@ const advancedResults = (model, populate) => async (req, res, next) => {
             page: page + 1,
             limit
         }
-    } else if (startIndex > 0) {
+    } 
+    
+    if (startIndex > 0) {
         pagination.prev = {
             page: page - 1,
             limit

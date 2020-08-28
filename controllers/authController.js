@@ -152,10 +152,11 @@ exports.resetPassword = async(req, res, next) => {
 // @access  Private
 exports.updateDetails = async(req, res, next) => {
     try {
-        const fieldsToUpdate = {
-            name: req.body.name,
-            email: req.body.email,
-        }
+        // Delete Password and role field to avoid user updating those fields with this route
+        delete req.body.password;
+        delete req.body.role;
+
+        const fieldsToUpdate = { ...req.body };
 
         const user = await userModel.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
             new: true,
