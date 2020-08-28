@@ -5,6 +5,7 @@ const bootcamp = require('./routes/bootcamp');
 const course = require('./routes/course');
 const auth = require('./routes/auth');
 const users = require('./routes/users');
+const review = require('./routes/review');
 const morgan = require('morgan');
 const conectdb = require('./config/db');
 const errorHandler = require('./middleware/error');
@@ -35,6 +36,7 @@ app.use('/api/v1/bootcamp', bootcamp);
 app.use('/api/v1/courses', course);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/auth/users', users);
+app.use('/api/v1/review', review);
 
 // load error handler
 app.use(errorHandler);

@@ -15,9 +15,11 @@ const router = express.Router();
 
 //Load other resource router
 const courseRouter = require('./course');
+const reviewRouter = require('./review');
 
 //Re-Route to other resource router
 router.use('/:bootcampId/courses', courseRouter);
+router.use('/:bootcampId/reviews', reviewRouter);
 
 router.route('/')
     .get(advancedResults(bootcampModel, 'courses'), getBootcamps)

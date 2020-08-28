@@ -18,10 +18,12 @@ mongoose.connect(process.env.MONGO_URI, {
 const bootcamp = require('./models/bootcampModel');
 const course = require('./models/courseModel');
 const user = require('./models/userModel');
+const reviewModel = require('./models/reviewModel');
 
 // Read JSON files
 const bootcamps = JSON.parse(fs.readFileSync(`${__dirname}/_data/bootcamps.json`, 'utf-8'));
 const courses = JSON.parse(fs.readFileSync(`${__dirname}/_data/courses.json`, 'utf-8'));
+const reviews = JSON.parse(fs.readFileSync(`${__dirname}/_data/reviews.json`, 'utf-8'));
 const users = JSON.parse(fs.readFileSync(`${__dirname}/_data/users.json`, 'utf-8'));
 
 // Import into Database
@@ -55,7 +57,21 @@ const importData = async () => {
 
             return value;
         });
+        // Create Courses
         await course.create(reformedCourses);
+
+        // Get user and admin roles users
+        const usersAndAdmins = await user.find().or([{ role: 'admin' }, { role: 'user' }]);
+
+        // Add bootcamps-Id and users-id in the reviews
+        const reformedReviews = reviews.map((value, index) => {
+            value.user = usersAndAdmins[index] ? usersAndAdmins[index].id : admin.id;
+            value.bootcamp = boots[index] ? boots[index].id : boots[0].id;
+
+            return value;
+        });
+        // create Reviews
+        await reviewModel.create(reformedReviews);
 
         console.log("Data imported!".green);
         process.exit();
