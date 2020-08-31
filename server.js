@@ -11,6 +11,9 @@ const conectdb = require('./config/db');
 const errorHandler = require('./middleware/error');
 const fileupload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require('helmet');
+const xssClean = require('xss-clean');
 
 // load env vars
 dotenv.config({ path: './config/config.env' });
@@ -26,8 +29,19 @@ if (process.env.NODE_ENV === "develoment") {
     app.use(morgan('dev'));
 }
 app.use(express.json());
+
 // using express cookie-parser middleware
 app.use(cookieParser());
+
+// helmet middleware to add security headers
+app.use(helmet());
+
+// prevent xss attack middleware
+app.use(xssClean());
+
+// Mongo sanitize to prevent NoSql injection
+app.use(mongoSanitize());
+
 // using express fileupload middleware
 app.use(fileupload());
 
