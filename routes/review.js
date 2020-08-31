@@ -1,7 +1,10 @@
 const express = require('express');
-const {
+const { 
     getReviews,
-    getSingleReview
+    getSingleReview,
+    createReview,
+    updateReview,
+    deleteReview
 } = require('../controllers/reviewController');
 
 const reviewModel = require('../models/reviewModel');
@@ -16,9 +19,12 @@ router.route('/')
     .get(advancedResults(reviewModel, {
         path: 'Bootcamp',
         select: 'name description'
-    }), getReviews);
+    }), getReviews)
+    .post(protect, authorize('admin', 'user'), createReview);
 
 router.route('/:id')
-    .get(getSingleReview);
+    .get(getSingleReview)
+    .put(protect, authorize('admin', 'user'), updateReview)
+    .delete(protect, authorize('admin', 'user'), deleteReview);
 
 module.exports = router;

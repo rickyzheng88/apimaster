@@ -2,11 +2,12 @@ const express = require('express');
 const { 
     register,
     login,
+    logout,
     getUser,
     forgotPassword,
     resetPassword,
     updateDetails,
-    updatePassword
+    updatePassword,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
@@ -17,6 +18,8 @@ router.route('/register')
 
 router.route('/login')
     .post(login)
+
+router.get('/logout', logout);
 
 router.route('/user')
     .get(protect, getUser);

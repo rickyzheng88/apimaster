@@ -34,4 +34,38 @@ const reviewSchema = new mongoose.Schema({
     }
 });
 
+// Static method to get Average of Bootcamp Ratings
+reviewSchema.statics.getAverageRating = async function(bootcampId) {
+    const obj = await this.aggregate([
+        {
+            $match: { bootcamp: bootcampId }
+        }, {
+            $group: {
+                _id: '$bootcamp',
+                averageRating: { $avg: '$rating' }
+            }
+        }
+    ]);
+
+    try {
+        await this.model('Bootcamp').findByIdAndUpdate(bootcampId, {
+           averageRating: obj[0].averageRating
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// call averageRating after save
+reviewSchema.post('save', function(){
+    this.constructor.getAverageRating(this.bootcamp);
+});
+
+// Call averageRating before remove
+reviewSchema.pre('remove', function(){
+    this.constructor.getAverageRating(this.bootcamp);
+});
+
+reviewSchema.index({ bootcamp: 1, user: 1 }, { unique: true });
+
 module.exports = mongoose.model('Review', reviewSchema);

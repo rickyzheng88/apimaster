@@ -62,7 +62,7 @@ const importData = async () => {
 
         // Get user and admin roles users
         const usersAndAdmins = await user.find().or([{ role: 'admin' }, { role: 'user' }]);
-
+        
         // Add bootcamps-Id and users-id in the reviews
         const reformedReviews = reviews.map((value, index) => {
             value.user = usersAndAdmins[index] ? usersAndAdmins[index].id : admin.id;
@@ -86,6 +86,7 @@ const deleteData = async () => {
         await bootcamp.deleteMany();
         await course.deleteMany();
         await user.deleteMany();
+        await reviewModel.deleteMany();
 
         console.log("Data Deleted!".red);
         process.exit();

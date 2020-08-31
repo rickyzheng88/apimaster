@@ -9,7 +9,8 @@ const review = require('./routes/review');
 const morgan = require('morgan');
 const conectdb = require('./config/db');
 const errorHandler = require('./middleware/error');
-const fileupload = require('express-fileupload')
+const fileupload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
 
 // load env vars
 dotenv.config({ path: './config/config.env' });
@@ -25,6 +26,8 @@ if (process.env.NODE_ENV === "develoment") {
     app.use(morgan('dev'));
 }
 app.use(express.json());
+// using express cookie-parser middleware
+app.use(cookieParser());
 // using express fileupload middleware
 app.use(fileupload());
 

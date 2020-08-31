@@ -215,3 +215,23 @@ const sendTokenResponse = (user, statusCode, res) => {
             token
         });
 };
+
+// @desc    Log out
+// @route   GET /api/v1/auth/logout
+// @access  Public
+exports.logout = async(req, res, next) => {
+    try {
+        res.cookie('token', '0000', {
+            expires: new Date(Date.now() + 10 * 1000),
+            httpOnly: true,
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {}
+        });
+    } catch (err) {
+        console.log(err);
+        next(new modelError("RESOURCE_NOT_CREATED"));
+    }
+};
